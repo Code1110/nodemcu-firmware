@@ -477,7 +477,7 @@ static int ws2812_buffer_set(lua_State* L) {
     // Overflow check
     if( buffer->colorsPerLed*led + len > buffer->colorsPerLed*buffer->size )
     {
-	return luaL_error(L, "string size will exceed strip length");
+      return luaL_error(L, "string size will exceed strip length");
     }
 
     c_memcpy(&buffer->values[buffer->colorsPerLed*led], buf, len);
@@ -489,6 +489,21 @@ static int ws2812_buffer_set(lua_State* L) {
     {
       buffer->values[buffer->colorsPerLed*led+i] = luaL_checkinteger(L, 3+i);
     }
+  }
+
+  return 0;
+}
+
+static int ws2812_buffer_sets(lua_State* L) {
+  ws2812_buffer * buffer = (ws2812_buffer*)luaL_checkudata(L, 1, "ws2812.buffer");
+
+  size_t len;
+  const char * newData = lua_tolstring(L, 2, &len);
+
+  for(int i = 0; i < len; i+=4) {
+    buffer->values[buffer->colorsPerLed*newData[i]] = (uint8_t)newData[i+1];
+    buffer->values[buffer->colorsPerLed*newData[i]+1] = (uint8_t)newData[i+2];
+    buffer->values[buffer->colorsPerLed*newData[i]+2] = (uint8_t)newData[i+3];
   }
 
   return 0;
@@ -577,6 +592,7 @@ static const LUA_REG_TYPE ws2812_buffer_map[] =
   { LSTRKEY( "mix" ),     LFUNCVAL( ws2812_buffer_mix )},
   { LSTRKEY( "power" ),   LFUNCVAL( ws2812_buffer_power )},
   { LSTRKEY( "set" ),     LFUNCVAL( ws2812_buffer_set )},
+  { LSTRKEY( "sets" ),     LFUNCVAL( ws2812_buffer_sets )},
   { LSTRKEY( "shift" ),   LFUNCVAL( ws2812_buffer_shift )},
   { LSTRKEY( "size" ),    LFUNCVAL( ws2812_buffer_size )},
   { LSTRKEY( "sub" ),     LFUNCVAL( ws2812_buffer_sub )},
